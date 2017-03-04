@@ -25,12 +25,14 @@ struct Point {
 };
 
 struct Point g_pointsStop[] = {
-    {40, 40, 40, 1},
+    {38, 40, 42, 1},
 };
 
 struct Point g_pointsFwd[] = {
-    {35, 30, 30, 20},
-    {45, 50, 50, 20},
+    {33, 50, 52, 5},
+    {33, 30, 32, 10},
+    {43, 30, 32, 5},
+    {43, 50, 52, 10},
 };
 
 struct Point g_pointsBack[] = {
@@ -39,13 +41,17 @@ struct Point g_pointsBack[] = {
 };
 
 struct Point g_pointsLeft[] = {
-		{35, 30, 50, 20},
-		{45, 40, 30, 20},
+		{35, 40, 30, 5},
+		{35, 30, 40, 10},
+		{45, 30, 40, 5},
+		{45, 40, 30, 10},
 };
 
 struct Point g_pointsRight[] = {
-		{35, 50, 30, 20},
-		{45, 30, 50, 20},
+		{35, 30, 40, 5},
+		{35, 40, 30, 10},
+		{45, 40, 30, 5},
+		{45, 30, 40, 10},
 };
 
 struct Point g_point;

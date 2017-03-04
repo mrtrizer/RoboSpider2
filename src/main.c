@@ -29,29 +29,32 @@ struct Point g_pointsStop[] = {
 };
 
 struct Point g_pointsFwd[] = {
-    {33, 50, 52, 5},
-    {33, 30, 32, 10},
-    {43, 30, 32, 5},
-    {43, 50, 52, 10},
+//   c   r   l   d
+    {33, 50, 51, 5},
+    {33, 30, 33, 10},
+    {43, 30, 33, 5},
+    {43, 50, 51, 10},
 };
 
 struct Point g_pointsBack[] = {
-    {35, 40, 50, 20},
-    {45, 30, 40, 20},
+    {33, 30, 33, 5},
+    {33, 50, 51, 10},
+    {43, 50, 51, 5},
+    {43, 30, 33, 10},
 };
 
 struct Point g_pointsLeft[] = {
-		{35, 40, 30, 5},
-		{35, 30, 40, 10},
-		{45, 30, 40, 5},
-		{45, 40, 30, 10},
+	{35, 40 - 10, 32 + 10, 10},
+	{35, 30 - 10, 42 + 10, 15},
+	{45, 30 - 10, 42 + 10, 10},
+	{45, 40 - 10, 32 + 10, 15},
 };
 
 struct Point g_pointsRight[] = {
-		{35, 30, 40, 5},
-		{35, 40, 30, 10},
-		{45, 40, 30, 5},
-		{45, 30, 40, 10},
+	{35, 30 - 10, 42 + 10, 10},
+	{35, 40 - 10, 32 + 10, 15},
+	{45, 40 - 10, 32 + 10, 10},
+	{45, 30 - 10, 42 + 10, 15},
 };
 
 struct Point g_point;
@@ -60,12 +63,12 @@ int g_pointsCount = 0;
 uint8_t g_curPos = 0;
 
 void initUSART() {
-    UCSRC = ( 1 << URSEL ) 
-        | ( 0 << UCSZ2 ) 
-        | ( 1 << UCSZ1 ) 
-        | ( 1 << UCSZ0 ) 
-        | ( 0 << UPM1 ) 
-        | ( 0 << UPM0 ) 
+    UCSRC = ( 1 << URSEL )
+        | ( 0 << UCSZ2 )
+        | ( 1 << UCSZ1 )
+        | ( 1 << UCSZ0 )
+        | ( 0 << UPM1 )
+        | ( 0 << UPM0 )
         | ( 0 << USBS );
 
     UCSRB = (1<<RXEN)|(1<<TXEN);
@@ -106,31 +109,31 @@ void handleInput() {
     {
         case '1': LED_PORT |= (1 << LED); break;
         case '2': LED_PORT &= ~(1 << LED); break;
-				case 's':
-					g_curPos = 0;
-					g_points = g_pointsStop;
-					g_pointsCount = sizeof(g_pointsStop) / sizeof(struct Point);
-				break;
-				case 'f':
-					g_curPos = 0;
-					g_points = g_pointsFwd;
-					g_pointsCount = sizeof(g_pointsFwd) / sizeof(struct Point);
-				break;
-				case 'b':
-					g_curPos = 0;
-					g_points = g_pointsBack;
-					g_pointsCount = sizeof(g_pointsBack) / sizeof(struct Point);
-				break;
-				case 'l':
-					g_curPos = 0;
-					g_points = g_pointsLeft;
-					g_pointsCount = sizeof(g_pointsLeft) / sizeof(struct Point);
-				break;
-				case 'r':
-					g_curPos = 0;
-					g_points = g_pointsRight;
-					g_pointsCount = sizeof(g_pointsRight) / sizeof(struct Point);
-				break;
+        case 's':
+            g_curPos = 0;
+            g_points = g_pointsStop;
+            g_pointsCount = sizeof(g_pointsStop) / sizeof(struct Point);
+        break;
+        case 'f':
+            g_curPos = 0;
+            g_points = g_pointsFwd;
+            g_pointsCount = sizeof(g_pointsFwd) / sizeof(struct Point);
+        break;
+        case 'b':
+            g_curPos = 0;
+            g_points = g_pointsBack;
+            g_pointsCount = sizeof(g_pointsBack) / sizeof(struct Point);
+        break;
+        case 'l':
+            g_curPos = 0;
+            g_points = g_pointsLeft;
+            g_pointsCount = sizeof(g_pointsLeft) / sizeof(struct Point);
+        break;
+        case 'r':
+            g_curPos = 0;
+            g_points = g_pointsRight;
+            g_pointsCount = sizeof(g_pointsRight) / sizeof(struct Point);
+        break;
     }
 }
 
@@ -146,11 +149,10 @@ main()
     while(1)
     {
 
-				handleInput();
+        handleInput();
 
         g_point = g_points[g_curPos];
-				
-
+//
         unsigned i = 0;
         for (; i < g_point.delay * 10; i++)
             _delay_ms(1);

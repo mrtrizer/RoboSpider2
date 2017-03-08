@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     Button buttonBack;
     Button buttonLeft;
     Button buttonRight;
+    Button buttonForwardLeft;
+    Button buttonForwardRight;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private BluetoothAdapter btAdapter = null;
@@ -52,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         buttonBack = (Button) findViewById(R.id.button_back);
         buttonLeft = (Button) findViewById(R.id.button_left);
         buttonRight = (Button) findViewById(R.id.button_right);
+        buttonForwardLeft = (Button) findViewById(R.id.button_forward_left);
+        buttonForwardRight = (Button) findViewById(R.id.button_forward_right);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
@@ -91,6 +95,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 sendData("r");
             }
+        });
+
+        buttonForwardLeft.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) { sendData("1"); }
+        });
+
+        buttonForwardRight.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) { sendData("2"); }
         });
     }
 

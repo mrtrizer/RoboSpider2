@@ -36,6 +36,22 @@ struct Point g_pointsFwd[] = {
     {43, 50, 51, 10},
 };
 
+struct Point g_pointsFwdLeft[] = {
+//   c   r   l   d
+    {33, 50, 51 - 2, 5},
+    {33, 30, 33 + 2, 10},
+    {43, 30, 33 + 2, 5},
+    {43, 50, 51 - 2, 10},
+};
+
+struct Point g_pointsFwdRight[] = {
+//   c   r   l   d
+    {33, 50 - 2, 51, 5},
+    {33, 30 + 2, 33, 10},
+    {43, 30 + 2, 33, 5},
+    {43, 50 - 2, 51, 10},
+};
+
 struct Point g_pointsBack[] = {
     {33, 30, 33, 5},
     {33, 50, 51, 10},
@@ -107,8 +123,6 @@ void handleInput() {
 
     switch (rc)
     {
-        case '1': LED_PORT |= (1 << LED); break;
-        case '2': LED_PORT &= ~(1 << LED); break;
         case 's':
             g_curPos = 0;
             g_points = g_pointsStop;
@@ -118,6 +132,16 @@ void handleInput() {
             g_curPos = 0;
             g_points = g_pointsFwd;
             g_pointsCount = sizeof(g_pointsFwd) / sizeof(struct Point);
+        break;
+        case '1':
+            g_curPos = 0;
+            g_points = g_pointsFwdLeft;
+            g_pointsCount = sizeof(g_pointsFwdLeft) / sizeof(struct Point);
+        break;
+        case '2':
+            g_curPos = 0;
+            g_points = g_pointsFwdRight;
+            g_pointsCount = sizeof(g_pointsFwdRight) / sizeof(struct Point);
         break;
         case 'b':
             g_curPos = 0;

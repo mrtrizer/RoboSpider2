@@ -38,8 +38,7 @@
         android:layout_marginRight="15dp"
         android:layout_marginEnd="15dp"
         android:id="@+id/button_forward_left"
-        android:text="FWDL"
-        android:enabled="false" />
+        android:text="FWDL" />
 
     <Button
         android:text="Left"
@@ -59,7 +58,7 @@
         android:layout_marginLeft="18dp"
         android:layout_marginStart="18dp"
         android:id="@+id/button_forward_right"
-        android:enabled="false" />
+        android:enabled="true" />
 
     <Button
         android:text="Right"

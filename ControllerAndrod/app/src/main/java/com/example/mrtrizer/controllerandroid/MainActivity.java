@@ -58,12 +58,13 @@ public class MainActivity extends AppCompatActivity {
         buttonForwardRight = (Button) findViewById(R.id.button_forward_right);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        checkBTState();
+        checkBTState(btAdapter);
 
         buttonConnect.setOnClickListener(new OnClickListener() {
-            @Override
             public void onClick(View v) {
-                connect();
+                // Set up a pointer to the remote node using it's address.
+                BluetoothDevice device = btAdapter.getRemoteDevice(address);
+                connect(device);
             }
         });
 
@@ -106,29 +107,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void connect() {
-        // Establish the connection.  This will block until it connects.
-        Log.d(TAG, "...Соединяемся...");
-        try {
-            btSocket.connect();
-            Log.d(TAG, "...Соединение установлено и готово к передачи данных...");
-        } catch (IOException e) {
-            try {
-                btSocket.close();
-            } catch (IOException e2) {
-                errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        Log.d(TAG, "...onResume - попытка соединения...");
-
-        // Set up a pointer to the remote node using it's address.
-        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+    public void connect(BluetoothDevice device) {
 
         // Two things are needed to make a connection:
         //   A MAC address, which we got above.
@@ -144,10 +123,33 @@ public class MainActivity extends AppCompatActivity {
         // when you attempt to connect and pass your message.
         btAdapter.cancelDiscovery();
 
-        connect();
+        // Establish the connection.  This will block until it connects.
+        Log.d(TAG, "Connecting");
+        try {
+            btSocket.connect();
+            Log.d(TAG, "Connected");
+        } catch (IOException e) {
+            try {
+                btSocket.close();
+            } catch (IOException e2) {
+                errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "Try to resume");
+
+        // Set up a pointer to the remote node using it's address.
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+        connect(device);
 
         // Create a data stream so we can talk to server.
-        Log.d(TAG, "...Создание Socket...");
+        Log.d(TAG, "Socket initialization");
 
         try {
             outStream = btSocket.getOutputStream();
@@ -160,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
 
-        Log.d(TAG, "...In onPause()...");
+        Log.d(TAG, "Paused");
 
         if (outStream != null) {
             try {
@@ -170,21 +172,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        try     {
+        try {
             btSocket.close();
         } catch (IOException e2) {
             errorExit("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".");
         }
     }
 
-    private void checkBTState() {
+    private void checkBTState(BluetoothAdapter btAdapter) {
         // Check for Bluetooth support and then check to make sure it is turned on
         // Emulator doesn't support Bluetooth and will return null
         if(btAdapter==null) {
-            errorExit("Fatal Error", "Bluetooth не поддерживается");
+            errorExit("Fatal Error", "Bluetooth is no supported");
         } else {
             if (btAdapter.isEnabled()) {
-                Log.d(TAG, "...Bluetooth включен...");
+                Log.d(TAG, "Bluetooth on.");
             } else {
                 //Prompt user to turn on Bluetooth
                 Intent enableBtIntent = new Intent(btAdapter.ACTION_REQUEST_ENABLE);
@@ -201,17 +203,10 @@ public class MainActivity extends AppCompatActivity {
     private void sendData(String message) {
         byte[] msgBuffer = message.getBytes();
 
-        Log.d(TAG, "...Посылаем данные: " + message + "...");
-
         try {
             outStream.write(msgBuffer);
         } catch (IOException e) {
-            String msg = "In onResume() and an exception occurred during write: " + e.getMessage();
-            if (address.equals("00:00:00:00:00:00"))
-                msg = msg + ".\n\nВ переменной address у вас прописан 00:00:00:00:00:00, вам необходимо прописать реальный MAC-адрес Bluetooth модуля";
-            msg = msg +  ".\n\nПроверьте поддержку SPP UUID: " + MY_UUID.toString() + " на Bluetooth модуле, к которому вы подключаетесь.\n\n";
-
-            errorExit("Fatal Error", msg);
+            Log.d(TAG, "Send error");
         }
     }
 

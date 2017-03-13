@@ -1,5 +1,6 @@
 package com.example.mrtrizer.controllerandroid;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -57,14 +58,10 @@ public class MainActivity extends AppCompatActivity {
         buttonForwardLeft = (Button) findViewById(R.id.button_forward_left);
         buttonForwardRight = (Button) findViewById(R.id.button_forward_right);
 
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
-        checkBTState(btAdapter);
-
         buttonConnect.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 // Set up a pointer to the remote node using it's address.
-                BluetoothDevice device = btAdapter.getRemoteDevice(address);
-                connect(device);
+                connect();
             }
         });
 
@@ -107,7 +104,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void connect(BluetoothDevice device) {
+    public void connect() {
+
+        buttonConnect.setEnabled(false);
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+        checkBTState(btAdapter);
 
         // Two things are needed to make a connection:
         //   A MAC address, which we got above.
@@ -116,12 +121,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (IOException e) {
-            errorExit("Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+            buttonConnect.setEnabled(true);
         }
 
         // Discovery is resource intensive.  Make sure it isn't going on
         // when you attempt to connect and pass your message.
-        btAdapter.cancelDiscovery();
+        //btAdapter.cancelDiscovery();
 
         // Establish the connection.  This will block until it connects.
         Log.d(TAG, "Connecting");
@@ -129,12 +134,22 @@ public class MainActivity extends AppCompatActivity {
             btSocket.connect();
             Log.d(TAG, "Connected");
         } catch (IOException e) {
+            buttonConnect.setEnabled(true);
             try {
                 btSocket.close();
             } catch (IOException e2) {
-                errorExit("Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                buttonConnect.setEnabled(true);
             }
         }
+
+        // Create a data stream so we can talk to server.
+        Log.d(TAG, "Socket initialization");
+        try {
+            outStream = btSocket.getOutputStream();
+        } catch (IOException e) {
+            buttonConnect.setEnabled(true);
+        }
+        
     }
 
     @Override
@@ -143,19 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "Try to resume");
 
-        // Set up a pointer to the remote node using it's address.
-        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        connect();
 
-        connect(device);
-
-        // Create a data stream so we can talk to server.
-        Log.d(TAG, "Socket initialization");
-
-        try {
-            outStream = btSocket.getOutputStream();
-        } catch (IOException e) {
-            errorExit("Fatal Error", "In onResume() and output stream creation failed:" + e.getMessage() + ".");
-        }
     }
 
     @Override
@@ -166,14 +170,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (outStream != null) {
             try {
-                outStream.flush();
+                if (outStream != null)
+                    outStream.flush();
             } catch (IOException e) {
                 errorExit("Fatal Error", "In onPause() and failed to flush output stream: " + e.getMessage() + ".");
             }
         }
 
         try {
-            btSocket.close();
+            if (btSocket != null)
+                btSocket.close();
         } catch (IOException e2) {
             errorExit("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".");
         }
@@ -207,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
             outStream.write(msgBuffer);
         } catch (IOException e) {
             Log.d(TAG, "Send error");
+            buttonConnect.setEnabled(true);
         }
     }
 

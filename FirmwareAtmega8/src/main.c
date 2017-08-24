@@ -25,7 +25,7 @@ struct Point {
 };
 
 struct Point g_pointsStop[] = {
-    {38, 40, 42, 1},
+    {38, 40, 42, 20},
 };
 
 struct Point g_pointsFwd[] = {
@@ -38,18 +38,18 @@ struct Point g_pointsFwd[] = {
 
 struct Point g_pointsFwdLeft[] = {
 //   c   r   l   d
-    {33, 50, 51 - 2, 5},
-    {33, 30, 33 + 2, 10},
-    {43, 30, 33 + 2, 5},
-    {43, 50, 51 - 2, 10},
+    {33, 50, 51, 5},
+    {33, 30, 33, 10},
+    {43, 30, 33, 5},
+    {43, 50, 51, 10},
 };
 
 struct Point g_pointsFwdRight[] = {
 //   c   r   l   d
-    {33, 50 - 2, 51, 5},
-    {33, 30 + 2, 33, 10},
-    {43, 30 + 2, 33, 5},
-    {43, 50 - 2, 51, 10},
+    {33, 50, 51, 5},
+    {33, 30, 33, 10},
+    {43, 30, 33, 5},
+    {43, 50, 51, 10},
 };
 
 struct Point g_pointsBack[] = {
@@ -77,6 +77,7 @@ struct Point g_point;
 struct Point* g_points;
 int g_pointsCount = 0;
 uint8_t g_curPos = 0;
+uint8_t g_active = 0;
 
 void initUSART() {
     UCSRC = ( 1 << URSEL )
@@ -161,6 +162,12 @@ void handleInput() {
     }
 }
 
+uint8_t pointsEqual(struct Point* lastPoint, struct Point* nextPoint) {
+    return lastPoint->center == nextPoint->center
+        && lastPoint->right == nextPoint->right
+        && lastPoint->left == nextPoint->left;
+}
+
 main()
 {
     init();
@@ -175,7 +182,9 @@ main()
 
         handleInput();
 
-        g_point = g_points[g_curPos];
+        struct Point* nextPoint = &g_points[g_curPos];
+        g_active = !pointsEqual(&g_point, nextPoint);
+        g_point = *nextPoint;
 //
         unsigned i = 0;
         for (; i < g_point.delay * 10; i++)
@@ -189,15 +198,20 @@ main()
 
 ISR(TIMER0_OVF_vect)
 {
-    if (g_servoCounter >= 627) {
-        g_servoCounter = 0;
-        SERVO_PORT |= (1 << SERVO_CENTER) | (1 << SERVO_RIGHT) | (1 << SERVO_LEFT);
+    if (g_active) {
+        if (g_servoCounter >= 627) {
+            g_servoCounter = 0;
+            SERVO_PORT |= (1 << SERVO_CENTER) | (1 << SERVO_RIGHT) | (1 << SERVO_LEFT);
+        }
+        if (g_servoCounter >= g_point.center)
+            SERVO_PORT &= ~(1 << SERVO_CENTER);
+        if (g_servoCounter >= g_point.right)
+            SERVO_PORT &= ~(1 << SERVO_RIGHT);
+        if (g_servoCounter >= g_point.left)
+            SERVO_PORT &= ~(1 << SERVO_LEFT);
+        g_servoCounter++;
+    } else {
+        // turn off servos if not active
+        SERVO_PORT &= ~((1 << SERVO_CENTER) | (1 << SERVO_RIGHT) | (1 << SERVO_LEFT));
     }
-    if (g_servoCounter >= g_point.center)
-        SERVO_PORT &= ~(1 << SERVO_CENTER);
-    if (g_servoCounter >= g_point.right)
-        SERVO_PORT &= ~(1 << SERVO_RIGHT);
-    if (g_servoCounter >= g_point.left)
-        SERVO_PORT &= ~(1 << SERVO_LEFT);
-    g_servoCounter++;
 }
